@@ -1,4 +1,9 @@
-192.168.1.252 -p 2221
-192.168.1.252 -p 2222
-192.168.1.252 -p 2223
+[web_servers]
+testserver1 ansible_host=192.168.1.252 ansible_port=2221 ansible_user=bdlawson
+testserver4 ansible_host=192.168.1.252 ansible_port=2032 ansible_user=bdlawson ansible_ssh_private_key_file=~/.ssh/ansible ansible_python_interpreter=/usr/bin/python3 ansible_pkg_mgr=dnf
 
+[db_servers]
+testserver2 ansible_host=192.168.1.252 ansible_port=2222 ansible_user=bdlawson
+
+[file_servers]
+testserver3 ansible_host=192.168.1.252 ansible_port=2223 ansible_user=bdlawson
