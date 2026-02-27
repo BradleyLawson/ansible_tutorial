@@ -1,0 +1,51 @@
+---
+# ------------
+# All machines
+# ------------
+
+- hosts: all
+  become: true
+  vars:
+    apache_package: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    php_package: "{{ 'php' if ansible_os_family == 'Debian' else 'php' }}"
+  pre_tasks:
+
+    # --------------------------------
+    # Server Updates on Redhat servers
+    # --------------------------------
+    - name: Install updates (RedHat)
+      tags: always
+      ansible.builtin.command: dnf upgrade -y
+      when: ansible_os_family == "RedHat"
+
+    - name: Install updates (Debian)
+      tags: always
+      apt:
+        upgrade: dist
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create simone user
+    tags: always
+    user:
+      name: simone
+      groups: root
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGbtgoisTeku8o0ulET8qEbNsAc+SahBEd5+OGbRQpnP ansible key"
+
+  - name: add sudoers file for simone
+    tags: always
+    copy: 
+      src: sudoer_simone
+      dest: /etc/sudoers.d/simone
+      owner: root
+      group: root
+      mode: 0440

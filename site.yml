@@ -1,4 +1,7 @@
 ---
+# ------------
+# All machines
+# ------------
 
 - hosts: all
   become: true
@@ -13,14 +16,50 @@
     - name: Install updates (RedHat)
       tags: always
       ansible.builtin.command: dnf upgrade -y
+      changed_when: false
       when: ansible_os_family == "RedHat"
 
     - name: Install updates (Debian)
       tags: always
       apt:
-        upgrade: dist
         update_cache: yes
+      changed_when: false
       when: ansible_os_family == "Debian"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGbtgoisTeku8o0ulET8qEbNsAc+SahBEd5+OGbRQpnP ansible key"
+
+# ------------
+# Workstations
+# ------------
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/1.14.6/terraform_1.14.6_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0775
+      owner: root
+      group: root
+
+# ------------
+# Web Servers
+# ------------
 
 - hosts: web_servers
   become: true
@@ -50,6 +89,14 @@
       ansible.builtin.shell: "dnf install -y {{ apache_package }} {{ php_package }}"
       when: ansible_os_family == "RedHat"
 
+    - name: Start httpd (Fedora)
+      tags: apache,fedora, httpd
+      service: 
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
     - name: copy default html file for ansible_ssh_private_key_file
       tags: apache, apache2, httpd
       copy:
@@ -58,6 +105,10 @@
         owner: root
         group: root
         mode: 0644
+
+# ------------
+# Db Servers
+# ------------
 
 - hosts: db_servers
   become: true
@@ -76,6 +127,10 @@
         name: mariadb-server
         state: latest
       when: ansible_os_family == "Debian" 
+
+# ------------
+# File Servers
+# ------------
 
 - hosts: file_servers
   become: true
