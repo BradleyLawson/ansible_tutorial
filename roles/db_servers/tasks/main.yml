@@ -1,0 +1,13 @@
+- name: Install maria db (Fedora)
+  tags: fedora,db,mariadb
+  dnf5: 
+    name: mariadb
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Install maria db (Ubuntu)
+  tags: ubuntu,mariabd,bd
+  apt:
+    name: mariadb-server
+    state: latest
+  when: ansible_os_family == "Debian" 
